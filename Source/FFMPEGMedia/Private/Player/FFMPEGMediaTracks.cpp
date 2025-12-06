@@ -2643,7 +2643,7 @@ int FFFMPEGMediaTracks::AudioDecodeFrame(FTimespan& time, FTimespan& duration)
 }
 
 
-void FFFMPEGMediaTracks::RenderAudio()
+double FFFMPEGMediaTracks::RenderAudio()
 {
 	int audio_size, len1;
 
@@ -2690,6 +2690,8 @@ void FFFMPEGMediaTracks::RenderAudio()
 		             audioClockSerial, audioCallbackTime / 1000000.0);
 		extclk.SyncToSlave(&audclk);
 	}
+
+	return duration;
 }
 
 void FFFMPEGMediaTracks::StartDisplayThread()
@@ -2754,20 +2756,37 @@ int FFFMPEGMediaTracks::AudioRenderThread()
 {
 	double remaining_time = 0.0;
 
-
-	int64_t startTime = av_gettime_relative();
+	int64_t nextWakeTime = av_gettime_relative();
 	while (audioRunning)
 	{
 		if (bPrerolled)
 		{
-			RenderAudio();
-			int64_t endTime = av_gettime_relative();
-			int64_t dif = endTime - startTime;
-			if (dif < 33333)
+			double duration = RenderAudio();
+			if (duration > 0.0)
 			{
-				av_usleep(33333 - dif);
+				int64_t durationUS = (int64_t)(duration * 1000000.0);
+				nextWakeTime += durationUS;
+				int64_t now = av_gettime_relative();
+				if (nextWakeTime > now)
+				{
+					av_usleep(nextWakeTime - now);
+				}
+				else
+				{
+					if (now - nextWakeTime > 1000000)
+						nextWakeTime = now;
+				}
 			}
-			startTime = endTime;
+			else
+			{
+				av_usleep(5000);
+				nextWakeTime = av_gettime_relative();
+			}
+		}
+		else
+		{
+			av_usleep(10000);
+			nextWakeTime = av_gettime_relative();
 		}
 	}
 	return 0;
