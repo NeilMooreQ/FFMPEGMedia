@@ -2716,6 +2716,14 @@ void FFFMPEGMediaTracks::StopDisplayThread()
 void FFFMPEGMediaTracks::StartAudioRenderThread()
 {
 	StopDisplayThread();
+
+	// Force bPrerolled for audio-only streams
+	if (SelectedVideoTrack == INDEX_NONE && !bPrerolled)
+	{
+		bPrerolled = true;
+		SetRate(CurrentRate);
+	}
+
 	audioRunning = true;
 	audioRenderThread = LambdaFunctionRunnable::RunThreaded("AudioRenderThread", [this]()
 	{
@@ -2757,6 +2765,7 @@ int FFFMPEGMediaTracks::AudioRenderThread()
 	double remaining_time = 0.0;
 
 	int64_t nextWakeTime = av_gettime_relative();
+
 	while (audioRunning)
 	{
 		if (bPrerolled)
