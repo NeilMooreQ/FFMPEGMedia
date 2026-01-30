@@ -2691,7 +2691,7 @@ double FFFMPEGMediaTracks::RenderAudio()
 		extclk.SyncToSlave(&audclk);
 	}
 
-	return duration;
+	return duration.GetTotalSeconds();
 }
 
 void FFFMPEGMediaTracks::StartDisplayThread()

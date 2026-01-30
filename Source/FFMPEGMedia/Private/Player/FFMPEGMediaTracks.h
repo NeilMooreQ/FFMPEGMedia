@@ -443,7 +443,7 @@ private:
 	int AudioDecodeFrame(FTimespan& Time, FTimespan& Duration);
 
 	/** Convert the audio frame to be played by the media player*/
-	void RenderAudio();
+	double RenderAudio();
 
 	/** Thread to convert the audio frames */
 	int AudioRenderThread();

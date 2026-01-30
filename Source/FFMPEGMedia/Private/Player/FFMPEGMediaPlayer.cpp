@@ -605,7 +605,7 @@ void FFFMPEGMediaPlayer::dumpFFMPEGInfo()
 			{
 				AVDictionaryEntry* name = av_dict_get(FormatContext->programs[j]->metadata,
 				                                      "name", NULL, 0);
-				sz_duration += FString::Printf(TEXT("  Program %d %s\n"), FormatContext->programs[j]->id,
+				sz_duration += FString::Printf(TEXT("  Program %d %hs\n"), FormatContext->programs[j]->id,
 				                               name ? name->value : "");
 
 				total += FormatContext->programs[j]->nb_stream_indexes;
